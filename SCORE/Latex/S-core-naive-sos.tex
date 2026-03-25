@@ -1,0 +1,75 @@
+\begin{figure}
+	\centering
+	\begin{tabular}{c}
+		\bottomAlignProof
+		\AxiomC{$ $}
+		\RightLabel{\scriptsize \textsc{skip}}
+		\UnaryInfC{$\langle \lstiC{SKIP}, \sigma \rangle \Downarrow \sigma$}
+		\DisplayProof
+		\qquad
+		\bottomAlignProof
+		\AxiomC{$\sigma(\lstiC{x}) = (v, s)$}
+		\RightLabel{\scriptsize \textsc{inc}}
+		\UnaryInfC{$\langle \lstiC{INC x}, \sigma \rangle \Downarrow \sigma[\lstiC{x} \to (v+1,s)]$}
+		\DisplayProof
+		\\ \\
+		\bottomAlignProof
+		\AxiomC{$\sigma(\lstiC{x}) = (v, s)$}
+		\RightLabel{\scriptsize \textsc{dec}}
+		\UnaryInfC{$\langle \lstiC{DEC x}, \sigma \rangle \Downarrow \sigma[\lstiC{x} \to (v-1,s)]$}
+		\DisplayProof
+		\qquad
+		\bottomAlignProof
+		\AxiomC{$\sigma(\lstiC{x}) = (v, s)$}
+		\RightLabel{\scriptsize \textsc{push}}
+		\UnaryInfC{$\langle \lstiC{PUSH x}, \sigma \rangle \Downarrow \sigma[\lstiC{x} \to (0,v::s)]$}
+		\DisplayProof
+		\\ \\
+		\bottomAlignProof
+		\AxiomC{$\sigma(\lstiC{x}) = (v,
+        s)$}
+		\RightLabel{\scriptsize \textsc{pop}}
+		\UnaryInfC{$\langle \lstiC{POP x}, \sigma \rangle \Downarrow \sigma[\lstiC{x} \to (\hd(s),\tl(s))]$}
+		\DisplayProof
+		\qquad
+		\bottomAlignProof
+		\AxiomC{$\langle \lstiC{P} , \sigma \rangle \Downarrow \nu $}
+		\AxiomC{$\langle \lstiC{Q} , \nu \rangle \Downarrow \tau $}
+		\RightLabel{\scriptsize \textsc{seq}}
+		\BinaryInfC{$\langle \lstiC{P;Q}, \sigma \rangle \Downarrow \tau$}
+		\DisplayProof
+        \\ \\
+%        ---------------- iteration
+		\bottomAlignProof
+		\AxiomC{$\sigma(\lstiC{x}) = (v,s)$}
+		\AxiomC{$v \geq 0$}
+		\AxiomC{$\langle \lstiC{P}, \sigma \rangle \Downarrow^v \tau$}
+		\RightLabel{\scriptsize \textsc{for-fwd}}
+		\TrinaryInfC{$\langle \lstiC{FOR x \{P\}}, \sigma \rangle \Downarrow \tau$}
+		\DisplayProof
+		\\ \\
+		\bottomAlignProof
+		\AxiomC{$\sigma(\lstiC{x}) = (v,s)$}
+		\AxiomC{$v < 0$}
+		\AxiomC{$
+         \langle \lstiC{-(P)}, \sigma \rangle \Downarrow^{-v} \tau$}
+		\RightLabel{\scriptsize \textsc{for-bwd}}
+		\TrinaryInfC{$\langle \lstiC{FOR x \{P\}}, \sigma \rangle \Downarrow \tau$}
+		\DisplayProof
+		\\ \\
+		\bottomAlignProof
+		\AxiomC{$ $}
+		\RightLabel{\scriptsize \textsc{base}}
+		\UnaryInfC{$\langle \lstiC{P}, \sigma \rangle \Downarrow^0 \sigma$}
+		\DisplayProof
+		\qquad
+		\bottomAlignProof
+		\AxiomC{$\langle \lstiC{P}, \sigma \rangle \Downarrow \nu $}
+		\AxiomC{$\langle \lstiC{P}, \nu \rangle \Downarrow^{n} \tau$}
+		\RightLabel{\scriptsize \textsc{step}}
+		\BinaryInfC{$\langle \lstiC{P}, \sigma \rangle \Downarrow^{n+1} \tau$}
+		\DisplayProof
+	\end{tabular}
+	\caption{\nsemantics of \SCORE, the naive one.}
+	\label{fig:scoreSemanticnaive}
+\end{figure}

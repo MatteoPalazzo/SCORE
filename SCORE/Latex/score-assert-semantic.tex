@@ -1,0 +1,142 @@
+% !TeX spellcheck = en_US
+
+%-------------
+\section{A second reversible semantics for \SCORE\xspace -- this time with \lstiC{assert}}
+\label{section:S-CORE with assertions}
+
+Let us recall from the introduction that we identify \PIF as the standard approach for obtaining a reversible computational model from a non-reversible one. Instances of \PIF abound in the literature .
+Broadly speaking, \PIF consists of introducing expressions like $\lstiC{assert(}\Phi_{\lstiC{P}}\lstiC{)}$ into an operational semantics, with 
+\lstiC{P} a term of a computational model and $\Phi_{\lstiC{P}}$ a predicate. Applying $\lstiC{assert(}\Phi_{\lstiC{P}}\lstiC{)}$ to a computational state $\sigma$ means that:
+\begin{itemize}
+\item
+\lstiC{P} can be interpreted in $\sigma$ the goal being to transform $\sigma$ into a new state $\tau$ if and only if $\Phi_{\lstiC{P}}$ holds on $\sigma$;
+\item
+the properties enforced by $\Phi_{\lstiC{P}}$ on $\sigma$ are sufficient to assure that the inverse \invSC{P}, when interpreted in $\tau$, correctly recovers $\sigma$.
+\end{itemize}
+
+%%%%---
+\paragraph{The key aspect.} 
+To obtain \asemantics according to \PIF, we must characterize the properties of states on which ``\lstiC{POP x}'' can be safely applied to produce a new state that ``\lstiC{PUSH x}'' can subsequently transform back into the original state from which ``\lstiC{POP x}'' was initially applied.
+
+%%%%---
+% \subsection{\asemantics in details}
+
+\begin{definition}[\asemantics]
+\label{definition:asemantics}
+The operational semantics \asemantics for \SCORE contains all and only the rules in {\normalfont Fig.~\ref{fig:scoreSemanticnaive}} of \nsemantics but \textsc{pop}, replaced by:
+\begin{center}
+\bottomAlignProof
+\AxiomC{$\sigma(\lstiC{x}) = (v, s)$}
+\AxiomC{$\lstiC{assert(}v\ \lstiC{=}\ 0 \lstiC{)} $}
+\AxiomC{$\lstiC{assert(}s\ \lstiC{=}\ h \cons t \lstiC{)} $}
+\RightLabel{\scriptsize \textsc{assert-pop} \enspace .}
+\TrinaryInfC{$\langle \lstiC{POP x}, \sigma \rangle \Downarrow \sigma[\lstiC{x} \to (h,t)]$}
+\DisplayProof 
+\end{center}
+\end{definition}
+\noindent
+The behavior of the new rule \textsc{assert-pop} can be illustrated by the following pseudo-code:
+\begin{align}
+\nonumber
+&\lstiC{let}\ \sigma(x) = (v,s)\ \lstiC{in}
+\\
+\nonumber
+&\lstiC{if assert(}v\ \lstiC{==}\ 0 \lstiC{) then}
+\\
+\label{align: code explaining assert-pop}
+&\lstiC{ \{if assert(}s\ \lstiC{==}\ h \cons t \lstiC{) then \{ } ``\textrm{update}\ \sigma\ \textrm{to}\ \sigma[\lstiC{x} \to (h,t)]\textrm{''} \lstiC{ \} else abort\}}
+\\
+\nonumber
+&\lstiC{else abort}
+\enspace .
+\end{align}
+\noindent
+The pseudo-code starts by evaluating \lstiC{x} in $\sigma$, getting some pair $(v, s)$, analogously to the rule \textsc{pop} it replaces in Fig.~\ref{fig:scoreSemanticnaive}.
+The second step is to \emph{verify} that $\lstiC{assert(}v\ \lstiC{==}\ 0 \lstiC{)}$ holds in the state $\sigma$. If not, the whole computation \emph{aborts}. Otherwise, the last step \emph{verifies} $\lstiC{assert(}s\ \lstiC{==}\ h \cons t \lstiC{)}$ in $\sigma$, that is it checks that some $h$ and $t$ exist to match the stack $s$. The interpretation of ``\lstiC{POP x}'' keeps proceeding only in the positive case. Otherwise the computation \emph{aborts}.
+ 
+As it should be evident from~\eqref{align: code explaining assert-pop} that ``\lstiC{P;}\invSC{P}'' does not necessarily lead to a computational state,
+we think it is natural to introduce the following notion:
+
+\begin{definition}[A \WeaRev semantics for \SCORE]
+\label{definition:WeaRev semantics for SCORE}
+A big-step semantic $\Downarrow\, \subseteq \SCORE \times \Sigma \times \Sigma$ for \SCORE is \WeaRev if and only if
+$\langle \lstiC{P}, \sigma \rangle \Downarrow \tau
+\iff
+\langle \invSC{P}, \tau \rangle \Downarrow \sigma$, for every $\lstiC{P} \in \SCORE$ and $\sigma, \tau \in \Sigma$.
+\end{definition}
+\noindent
+and to prove that \asemantics is \WeaRev according to it.
+
+\begin{remark} % in altri casi abbiamo usato l'environment remark
+Definition~\ref{definition:WeaRev semantics for SCORE} captures the idea that \invSC{P} can be applied to a state $\tau$ produced by \lstiC{P}, provided than \lstiC{P} does not abort, and vice versa.
+This is weaker than requiring ``$\langle \lstiC{(P;}\invSC{P)}, \sigma \rangle \Downarrow \sigma$, for every $\sigma$'', which would imply that neither \lstiC{P} nor \invSC{P} can abort. In the coming sections, such a stronger requirement will be identified as ``\StrRev big-step semantics''.
+\end{remark}
+
+
+
+\begin{theorem}
+\label{theorem: asemantics is eaRev}
+The \asemantics in {\normalfont Definition~\ref{definition:asemantics}} is \WeaRev.
+\end{theorem}
+
+\begin{proof}
+The proof can be carried out by structural induction on any term \lstiC{P} of \SCORE. We focus on proving the most relevant base case 
+``$\langle \lstiC{POP x}, \sigma \rangle \Downarrow \tau
+   \iff
+   \langle \invSC{(POP x)}, \tau \rangle \Downarrow \sigma$'',
+for every $\sigma$, and $\tau$.
+
+\begin{itemize}
+\item 
+Let us start from the ``only if'' implication, assuming $\langle \lstiC{POP x}, \sigma \rangle \Downarrow \tau$.
+The assumption says that, by the rule \textsc{assert-pop} in Definition~\ref{definition:asemantics}, some $v, s$ exist such that:
+	\begin{align*}
+		\sigma(\lstiC{x}) &= (0, v\cons s)
+		&&
+		\tau = \sigma[\lstiC{x} \to (v,s)]
+		\enspace .
+	\end{align*}
+	\noindent
+Interpreting ``$\invSC{(POP x)}$'' in $\sigma[\lstiC{x} \to (v,s)]$ means to interpret ``$\lstiC{PUSH x}$'' in $\sigma[\lstiC{x} \to (v,s)]$ by the rule \textsc{push} in Fig.~\ref{fig:scoreSemanticnaive}. Once both \textsc{assert-pop} and \textsc{push} have been applied, the final state is:
+	\begin{align*}
+		\underbrace{(\sigma[\lstiC{x} \to (v,s)])}_{\tau}[\lstiC{x} \to (0,v\cons s)]
+		& = \sigma[\lstiC{x} \to (0,v\cons s)] = \sigma
+		\enspace .
+	\end{align*}
+
+\item 
+Let us turn to the ``if'' implication, assuming $\langle \invSC{(POP x)}, \tau \rangle \Downarrow \sigma$.
+Since ``\invSC{(POP x)} = \lstiC{PUSH x}'', the assumption says that, by the rule \textsc{push} in Fig.~\ref{fig:scoreSemanticnaive}, some $v, s$ exist such that:
+	\begin{align*}
+		\tau(\lstiC{x}) & = (v, s)
+            &&
+		\sigma = \tau[\lstiC{x} \to (0,v\cons s)]
+		\enspace .
+	\end{align*}
+	\noindent
+Interpreting ``$\lstiC{(POP x)}$'' in $\tau[\lstiC{x} \to (0,v\cons s)]$ yields:
+	\begin{align*}
+		\underbrace{(\tau[\lstiC{x} \to (0,v\cons s)])}_{\sigma}[\lstiC{x} \to (v,s)]
+		& = \tau[\lstiC{x} \to (v, s)] = \tau
+		\enspace .
+	\end{align*}
+\end{itemize}
+\end{proof}
+
+%%%%---
+\subsection{Some concluding observations on \asemantics}
+\label{subsection:concerningAssertions}
+
+
+Let $\llparenthesis \lstiC{P} \rrparenthesis$ be the function from $\Sigma$ to $\Sigma$ that \asemantics associates with a term \lstiC{P}, that is $\llparenthesis \lstiC{P} \rrparenthesis(\sigma) = \tau$ if and only if $\langle \lstiC{P}, \sigma \rangle \Downarrow \tau $, according to Definition~\ref{definition:asemantics}.
+
+\begin{enumerate}
+\item
+\label{enumerate:interpretationA}
+As \asemantics may abort, the interpretation $\llparenthesis \lstiC{P} \rrparenthesis$ of \lstiC{P} is necessarily a partial function $\Sigma \rightharpoonup\Sigma$ because the state ``abort'' does not naturally belong to $\Sigma$: once in ``abort'' we have no clue at which the state generated it, position shared at least by \cite{paoliniTYPES2015}.
+
+\item
+\label{enumerate:interpretationB}
+Of course, defining $\Sigma_{\bot}$ as $\Sigma \cup \{\bot\}$, with $\bot$ distinguished from any state in $\Sigma$ to interpret ``abort'', we can transform $\llparenthesis \lstiC{P} \rrparenthesis$ into a total function in $\Sigma \rightarrow\Sigma_\bot$ such that $\llparenthesis \lstiC{P} \rrparenthesis(\sigma) = \bot$ if and only if $\langle \lstiC{P}, \sigma \not\Downarrow \tau \rangle$.
+However, we emphasize that $\llparenthesis \lstiC{P} \rrparenthesis$ would not be \emph{globally injective}. Instead, it would be \emph{injective} only on a sub-domain of $\Sigma$, i.e., on all states that never lead to abort. We recall that such an interpretation has been explored in \cite{PalazzoRoversi:Forest}.
+\end{enumerate}

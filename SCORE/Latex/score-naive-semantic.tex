@@ -1,0 +1,66 @@
+% !TeX spellcheck = en_US
+
+%%%%%%%%%%%%%%%%%%%%%%%
+\input{S-core-naive-sos.tex}
+%%%%%%%%%%%%%%%%%%%%%%%
+
+%-------------
+\section{A classical non-reversible semantics for \SCORE to start with}
+\label{section:A naive semantic ldots irreversible}
+
+We here introduce \nsemantics  for \SCORE, its `\textsf{N}' standing for `naive', word that emphasizes that the choices to define \nsemantics are simplistic, even though they provide a starting point for the other semantics introduced later.
+
+\vspace{\baselineskip}\noindent
+The set $\StackZZ$ of all and only the stacks containing values of $\ZZ$ is inductively given as:
+\begin{itemize}
+\item
+$[\,] \in \StackZZ$, and
+\item
+$h \cons t \in \StackZZ$ if $h \in \mathbb{Z}$ and $t \in \StackZZ$
+\end{itemize}
+and is associated with the following head and tail functions:
+\begin{align}
+\label{align: hd and tl base}
+\hd(\nil)     &= 0  &\tl(\nil)     &= \nil \\
+\label{align: hd and tl ind}
+\hd(h\cons t) &= h  &\tl(h \cons t) &= t
+\enspace ,
+\end{align}
+\noindent
+which are both \emph{total}, coherently with our interest about \TIF.
+
+\begin{definition}[\nsemantics]
+\label{definition:States of nsemantics}
+Fig.~\ref{fig:scoreSemanticnaive} shows the rules of \nsemantics which operates on states $\sigma : V \to \ZZ \times \StackZZ$ such that, if $\sigma(\lstiC{x}) = (v, s)$ then:
+\begin{itemize}
+\item
+$v$ is the value currently hold by \lstiC{x} in $\sigma$;
+\item
+$s$ is the stack currently hold by \lstiC{x} in $\sigma$, containing all and only the values previously stored in \lstiC{x} immediately before every interpretation of ``\lstiC{PUSH x}'' which resets \lstiC{x} to $0$.
+\end{itemize}
+\noindent
+States are ranged over by $\Sigma$.
+As usual, $\sigma[\lstiC{x} \to (v', s')]$ is $\sigma$ where \lstiC{x} maps to $(v', s')$, for some $v', s'$, and every \lstiC{y} other than \lstiC{x} maps to $\sigma(\lstiC{y})$.
+\end{definition}
+\noindent
+The rule \textsc{push} interprets ``\lstiC{PUSH x}'' by pushing $v$ on top of $s$ and replacing $v$ by $0$, for any $\sigma$ and $x$ such that $\sigma(x) = (v, s)$. 
+The rule \textsc{pop} interprets ``\lstiC{POP x}'' by popping the top $h$ of $s$ and using $h$ in place of $v$.
+
+
+%%%%------------------
+\subsection{\nsemantics always terminates}
+The reason why, for every \lstiC{P}, and state $\sigma$, the interpretation of \lstiC{P} in $\sigma$ by means of \nsemantics always terminates in some unique state $\tau$ is almost straightforward.
+Every iteration of ``\lstiC{FOR x \{P\}}'' generates the interpretation of a finite sequence ``\lstiC{P;...;P}'', regardless of whether ``\lstiC{FOR x \{P\}}'' is interpreted using \textsc{for-fwd} or \textsc{for-bwd}, as both unfold into a tree of multiple \textsc{step} occurrences with a single occurrence of \textsc{base} as its leaf.
+Both ``\lstiC{INC x}'' and ``\lstiC{DEC x}'' rely on $\ZZ$ being infinite in both directions, meaning that there is no inherent limit to the number of times they can be applied.
+The same observation holds for ``\lstiC{PUSH x}'' and ``\lstiC{POP x}''. Even when $\sigma(\lstiC{x}) = (v, \nil)$, ``\lstiC{POP x}'' can be applied indefinitely because, based on \eqref{align: hd and tl base}, $\nil$ is a fixed point of its interpretation $\tl(\cdot)$.
+
+%%%%------------------
+\subsection{\nsemantics is not reversible}
+\label{subsection:nsemantics is not reversible}
+
+This is because, for every \lstiC{x}, at least one state $\sigma$ exists such that \LH{($\langle \lstiC{POP x;} \invSC{(POP x)}, \sigma \rangle \not\Downarrow \sigma$)}, according to the rules in Fig.~\ref{fig:scoreSemanticnaive}.
+
+For example, let $\sigma$ be such that $\sigma(\lstiC{x}) = (5,[2])$. 
+Then, $\langle \lstiC{POP x}, \sigma \rangle \Downarrow \sigma[\lstiC{x} \to (2, \nil)]$. As $\lstiC{PUSH x} =$  $\invSC{(POP x)}$, we have $\langle \invSC{(POP x)}, \sigma[\lstiC{x} \to (2, \nil)] \rangle \Downarrow \sigma[\lstiC{x} \to (0,[2])]$, i.e. $\langle \lstiC{POP x;}\invSC{(POP x)}, \sigma \rangle \Downarrow \sigma[\lstiC{x} \to (0,[2])]$, but $\sigma[x \to (0,[2])] \neq \sigma$, which means that the sequential composition of ``\lstiC{POP x}'', followed by its inverse ``\lstiC{PUSH x}'', starting from $\sigma$, does not lead back to $\sigma$.
+
+The problem is that ``\lstiC{POP x}'' overwrites the current value of \lstiC{x}. Therefore, when trying to reverse the operation by applying ``\lstiC{PUSH x}'', the value to which \lstiC{x} must be reset is unknown. The \nsemantics will simply always set \lstiC{x} to the default value $0$. This is certainly not surprising, remarking that if we want be coherent with \TIF perspective, the operational semantics of \SCORE must be more sophisticated than \nsemantics.

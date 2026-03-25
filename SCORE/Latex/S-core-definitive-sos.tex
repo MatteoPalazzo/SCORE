@@ -1,0 +1,74 @@
+\begin{figure}[t]
+	\centering
+	\begin{tabular}{c}
+		\bottomAlignProof
+		\AxiomC{$ $}
+		\RightLabel{\scriptsize \textsc{skip}}
+		\UnaryInfC{$\langle \lstiC{SKIP}, \sigma \rangle \Downarrow \sigma$}
+		\DisplayProof
+		\qquad
+		\bottomAlignProof
+		\AxiomC{$\sigma(\lstiC{x}) = (v, s, c)$}
+		\RightLabel{\scriptsize \textsc{inc}}
+		\UnaryInfC{$\langle \lstiC{INC x}, \sigma \rangle \Downarrow \sigma[\lstiC{x} \to (v+1,s,c)]$}
+		\DisplayProof
+		\\ \\
+		\bottomAlignProof
+		\AxiomC{$\sigma(\lstiC{x}) = (v, s, c)$}
+		\RightLabel{\scriptsize \textsc{dec}}
+		\UnaryInfC{$\langle \lstiC{DEC x}, \sigma \rangle \Downarrow \sigma[\lstiC{x} \to (v-1,s, c)]$}
+		\DisplayProof
+		\qquad
+		\bottomAlignProof
+		\AxiomC{$\sigma(\lstiC{x}) = (v, s, c)$}
+		\RightLabel{\scriptsize \textsc{push}}
+		\UnaryInfC{$\langle \lstiC{PUSH x}, \sigma \rangle \Downarrow \sigma[x \to \mbox{\lstinline[language=Coq]|push|}(v,s,c)]$}
+		\DisplayProof
+		\\ \\
+		\bottomAlignProof
+		\AxiomC{$\sigma(\lstiC{x}) = (v, s, c)$}
+		\RightLabel{\scriptsize \textsc{pop}}
+		\UnaryInfC{$\langle \lstiC{POP x}, \sigma \rangle \Downarrow \sigma[x \to \mbox{\lstinline[language=Coq]|pop|}(v,s,c)]$}
+		\DisplayProof
+		\qquad
+		\bottomAlignProof
+		\AxiomC{$\langle \lstiC{P} , \sigma \rangle \Downarrow \nu $}
+		\AxiomC{$\langle \lstiC{Q} , \nu \rangle \Downarrow \tau $}
+		\RightLabel{\scriptsize \textsc{seq}}
+		\BinaryInfC{$\langle \lstiC{P;Q}, \sigma \rangle \Downarrow \tau$}
+		\DisplayProof
+		\\ \\
+		\bottomAlignProof
+		\AxiomC{$\sigma(\lstiC{x}) = (v,s,c)$}
+		\AxiomC{$v \geq 0$}
+		\AxiomC{$\langle \lstiC{P}, \sigma \rangle \Downarrow^v \tau$}
+		\RightLabel{\scriptsize \textsc{for-fwd}}
+		\TrinaryInfC{$\langle \lstiC{FOR x \{P\}}, \sigma \rangle \Downarrow \tau$}
+		\DisplayProof
+		\\ \\
+		\bottomAlignProof
+		\AxiomC{$\sigma(\lstiC{x}) = (v,s,c)$}
+		\AxiomC{$v < 0$}
+		\AxiomC{$\invSC{P} = \lstiC{Q}$}
+		\AxiomC{$
+         \langle \lstiC{Q}, \sigma \rangle \Downarrow^{-v} \tau$}
+		\RightLabel{\scriptsize \textsc{for-bwd}}
+		\QuaternaryInfC{$\langle \lstiC{FOR x \{P\}}, \sigma \rangle \Downarrow \tau$}
+		\DisplayProof
+		\\ \\
+		\bottomAlignProof
+		\AxiomC{$ $}
+		\RightLabel{\scriptsize \textsc{base}}
+		\UnaryInfC{$\langle \lstiC{P}, \sigma \rangle \Downarrow^0 \sigma$}
+		\DisplayProof
+		\qquad
+		\bottomAlignProof
+		\AxiomC{$\langle \lstiC{P}, \sigma \rangle \Downarrow \nu $}
+		\AxiomC{$\langle \lstiC{P}, \nu \rangle \Downarrow^{n} \tau$}
+		\RightLabel{\scriptsize \textsc{for-rec}}
+		\BinaryInfC{$\langle \lstiC{P}, \sigma \rangle \Downarrow^{n+1} \tau$}
+		\DisplayProof
+	\end{tabular}
+	\caption{\rsemantics of \SCORE.}
+	\label{fig:scoreSemanticDefinitive}
+\end{figure}

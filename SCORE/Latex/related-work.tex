@@ -1,0 +1,8 @@
+% !TeX spellcheck = en_US
+\paragraph{Related work.}
+We see the operational semantics of \lstiC{PUSH} and \lstiC{POP}, which ensure their mutual invertibility regardless of the initial stack content, as an instance of what Glück and Yokoyama term the ``\emph{Injectivisation process}'' in \cite{GLUCK2023113429}. 
+Their focus is on the ``injectivisation of a function $f$,'' a process that \emph{extends} the co-domain of $f$. The output $f(x)$ is paired with an additional value $g(x)$, provided by a suitable function $g$, enabling the unique recovery of the input $x$ from the pair $(f(x), g(x))$. 
+
+Drawing an analogy to injectivization, the structure used to interpret the stack in \SCORE is enhanced to ensure that \lstiC{PUSH} and \lstiC{POP} function as perfect inverses in all cases.
+
+Furthermore, we see \SCORE as a paradigmatic imperative reversible language, analogous to \RCORE \cite{Glck2017AMR}. Both frameworks feature a minimal set of built-in primitives for reversible algorithm expression. The key distinction is that \RCORE aligns with \PIF, as its operational semantics utilizes \lstiC{assert} to guarantee reversibility when handling the ``tree'' data type. In contrast, \SCORE conforms to \TIF, adopting an \lstiC{assert}-free operational semantics.

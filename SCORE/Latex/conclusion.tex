@@ -1,0 +1,7 @@
+% !TeX spellcheck = en_US
+\section{Conclusion}
+\SCORE and \rsemantics provide a working example in which reversible programs can \emph{always} be interpreted as \emph{total bijections}. Specifically, the use of \lstiC{assert} is not required to formalize a reversible operational semantics, provided that the state structure on which the semantics operates is sufficiently refined. 
+
+This refinement is precisely what we achieve by transitioning from \asemantics to \rsemantics -- the former implementing \PIF and the latter \TIF, terminology that we introduced in Section~\ref{section:Introduction}. Unlike \asemantics, which fails in certain states, \rsemantics continues computation, \emph{effectively managing failures reversibly}. 
+
+Based on \SCORE and \rsemantics, we aim at determining whether a general approach exists for identifying the necessary structural updates in state representation to transition from \PIF to \TIF.

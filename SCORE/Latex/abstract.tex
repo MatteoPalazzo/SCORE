@@ -1,0 +1,8 @@
+\begin{abstract}
+This work examines approaches to making computational models reversible. Broadly speaking, transforming a computational model into a reversible one, i.e. reversibilizing it, means extending its operational semantics conservatively in a way that each term of the model is interpretable as a bijection. 
+We recall that the most common strategy to reversibilize a computational model yields operational semantics that halts computations whenever a computational state cannot be uniquely determined from its successor state, thereby allowing terms to be interpreted as \emph{partial} bijective functions.
+We are interested in reversible computational models whose terms can be interpreted as \emph{total} bijective functions. This is essential for studying aspects of computational complexity related to reversible computational models.
+We introduce \SCORE, a language designed for manipulating variables and stacks. 
+Notably, common reversibilization strategies naturally lead to interpreting the functions for stack manipulation as partial bijections.
+According to our interests, we demonstrate how to interpret \SCORE in a state space where, using a proof-assistant, we certify that stack operations are \emph{total} bijections. It follows that all \SCORE terms can be interpreted as \emph{total} bijections.
+\end{abstract}

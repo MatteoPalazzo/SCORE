@@ -1,0 +1,107 @@
+% !TeX spellcheck = en_US
+\section{Introduction}
+\label{section:Introduction}
+Landauer's Principle \cite{landauer1961irreversibility} states that irreversible (i.e., classical) computation inherently dissipates energy, as it typically erases bits of information. This insight led to the exploration of reversible computational models and paradigmatic programming languages as alternatives to classical ones because inherently free from information erasure and unnecessary energy dissipation.
+
+Fredkin and Toffoli gates \cite{Toffoli1980,FredkinToffoli1982} provided the foundational basis for designing reversible algorithms. Since then, reversible computational models have been introduced to advance our understanding of computation, characterized by the following core principles:
+\begin{itemize}
+    \item In terms of computable functions, reversible computation can only process injective functions \cite{Axelsen2011WhatDR}.
+    \item Regarding operational semantics, every step in the forward direction from input to output can always be traced back uniquely recovering the input from the output.
+\end{itemize}
+
+\noindent
+For example, reversible computation implemented by reversible programming languages can offer practical advantages:
+\begin{itemize}
+    \item It simplifies debugging and testing by enabling programs to run backward, allowing for more effective error tracing and behavioral analysis \cite{LaneseG:rc24}.
+    \item It naturally provides primitives that facilitate efficient checkpointing and rollback mechanisms-critical for long-running applications. These mechanisms enable programs to revert to previous states without losing progress, ensuring smooth recovery from errors and interruptions \cite{perumalla2013introduction}.
+\end{itemize}
+
+
+%%%%%%%%%%%%
+\paragraph{``Reversibilization''.}
+A common approach to defining the operational meaning of ``reversible computation'' is to develop techniques for \emph{``reversibilizing''} the operational semantics of classical programming models or languages, whether deterministic or non-deterministic. We propose two distinct descriptions that can be used to clarify how ``reversibilization'' can be obtained in a deterministic setting. 
+
+\paragraph{``Reversibilize to Partial Injective Functions (\PIF)''.}
+This form of reversibility is realized by allowing the operational semantics of a reversible computational model to abort the interpretation of a term when the current state does not produce a new state from which we can recover the current one unambiguously. 
+Consequently, terms are interpreted as partial injective mappings: (i) partial because they are not defined for every input; (ii) injective because, when no abort occurs, 
+both the next and the previous computational states can be
+uniquely determined independently from the state in which the computation is.
+
+The reversible programming language \JANUS \cite{LUTZ:JANUS86} is an instance of \PIF. Its operational semantics extends that one of a Turing-complete fragment of the \C programming language by incorporating \lstiC{assert} statements that enforce properties specific to computational states\footnote{\emph{State of a computation}: the values of relevant variables at a given point in the computation.}. 
+
+Verifying computational states via \lstiC{assert} is crucial for deriving the ``backward'' interpretation of \JANUS programs from output to input. Any computation -- whether executing in the ``forward'' or ``backward'' direction -- that enters a state failing to meet an \lstiC{assert} condition is aborted.
+
+\begin{example}
+We show why \JANUS \lstiC{if-then-else} is reversible.
+Recall that \JANUS \lstiC{if-then-else} has the form
+``\lstiC{if b then P else Q fi a}'' where \lstiC{b} is the usual guard and \lstiC{a} is a boolean expression.
+The ``forward'' interpretation of ``\lstiC{if b then P else Q fi a}'' works as expected: if \lstiC{b} evaluates to \lstiC{true}, then \lstiC{P} is executed; otherwise \lstiC{Q} is executed.
+Let $\sigma$ be the state obtained after either \lstiC{P} or \lstiC{Q} is executed. At this point, the \JANUS semantics checks \lstiC{assert a} in the state $\sigma$.
+It is the programmer’s task to define \lstiC{a} so that if $\sigma$ comes from \lstiC{P}, then \lstiC{assert a} holds, and if $\sigma$ comes from \lstiC{Q}, then \lstiC{not(assert a)} holds. In all other cases, the ``forward'' interpretation of ``\lstiC{if b then P else Q fi a}'' aborts.
+
+In the ``backward'' direction, the roles of \lstiC{b} and \lstiC{a} are swapped. This means that we interpret ``\lstiC{if a then P else Q fi b}'' instead of ``\lstiC{if b then P else Q fi a}'', where \lstiC{a} is now the guard and \lstiC{b} is checked by \lstiC{assert}.
+Here, \lstiC{a} decides which branch to follow, and \lstiC{assert b} must evaluate to \lstiC{true} or \lstiC{false}, depending on the branch just taken, to avoid \emph{abort}.
+
+The key idea is that \lstiC{b} and \lstiC{a} together ensure that
+\lstiC{P} is executed ``forward'' if and only if it is also executed ``backward'', and
+\lstiC{Q} is executed ``forward'' if and only if it is also executed ``backward''.
+\end{example}
+
+\paragraph{``Reversibilize to Total Injective Functions (\TIF)''.}
+This form of reversibilization can be achieved by refining the representation of the computational states that the terms in a classical computational model manipulate. The objective is for these terms to be interpreted as \emph{total} injective functions. While this limit expressivity, reversible programs always correspond to total functions, ensuring they never fail.
+
+
+\SRL \cite{MATOS:TCS15} is an instance of \TIF. It is a reversible programming language in which variables, unlike in many other models, range over $\mathbb{Z}$, instead of only $\NN$, to assure that the increment or the decrement of any value is always reversible, i.e.\! that one operation can always be undone by the other.
+The operational semantics of \SRL always terminates and does not require \lstiC{assert} on computational states, a property that justifies our terminology. As a result, \SRL is less expressive than \JANUS. Still, it can encode every \emph{primitive recursive function} \cite{MalettoR:JLAMP24}, as long as an \lstiC{if-then-else} structure is included \cite{MatosPR:RC20}.
+The ``backward'' execution of any program \lstiC{P} in \SRL is the same as the ``forward'' execution of its inverse \lstiC{-(P)}, where \lstiC{-(P)} is \emph{syntactically generated} from \lstiC{P}.
+
+\begin{example}
+A \SRL program is:
+\begin{align*}
+\lstiC{INC x; FOR x (DEC y); FOR x \{INC y\}; DEC x}
+\enspace .
+\end{align*}
+\noindent
+For any initial value $u$ in \lstiC{x}, ``\lstiC{INC x}'' increments it. Consequently, ``\lstiC{FOR x \{DEC y\}}'' decreases the value $v$ in \lstiC{y} for $u+1$ times. Interpreting ``\lstiC{INC x; FOR x \{DEC y\}}'' sets \lstiC{y} to $v-(u+1)$.
+The second part ``\lstiC{FOR x \{INC y\}; DEC x}'' \emph{is the inverse} ``\invSC{(INC x; FOR x \{DEC y\})}'' of the first part ``\lstiC{INC x; FOR x \{DEC y\}}'': increasing $u+1$ times \lstiC{y} and decreasing \lstiC{x} recovers the initial state with $u$ in \lstiC{x} and $v$ in \lstiC{y}.
+\end{example}
+
+\paragraph{Motivations.}
+Between \PIF and \TIF, we focus on the latter. The reason is that we find \PIF insufficient for fully characterizing reversible computations -- for example, when addressing questions about the computational complexity of reversible computational models.
+
+\paragraph{Contributions.}
+We study the idea that, with a small amount of extra information, we can move from cases where ``the instruction \lstiC{I} in a reversible computational model $\mathcal{M}$ sometimes needs to \emph{abort} because it is not reversible in every state'' to cases where ``the instruction \lstiC{I} in $\mathcal{M}$ is always reversible because the computational states in which \lstiC{I} runs are \emph{properly refined}''.
+
+Our view is that \lstiC{assert} is not strictly required to define expressive reversible computational models, covering both algorithms and the functions they compute.
+
+We make this view concrete by extending \SRL to \SCORE. Compared to \SRL, \SCORE is more algorithmically expressive because it has variables that hold $\mathbb{Z}$-valued stacks, with \lstiC{PUSH} and \lstiC{POP} acting on them. In particular, the operational semantics of \SCORE uses refined states in which \lstiC{PUSH} and \lstiC{POP}, absent in \SRL, are \emph{never-aborting} mutual inverses. That is, \lstiC{PUSH} and \lstiC{POP} form a total isomorphism. This is achieved by designing the \emph{internal} stack representation to keep the following analogy:
+\begin{quote}
+``\lstiC{PUSH} on a stack \lstiC{s} corresponds to the increment \lstiC{INC} of some $\mathbb{Z}$-valued variable \lstiC{x}, just as \lstiC{POP} on \lstiC{s} corresponds to the decrement \lstiC{DEC} of \lstiC{x}.'' 
+\end{quote}
+\noindent
+In particular, with the proof assistant \href{https://coq.inria.fr/}{\textsf{Coq/Rocq}}:
+(i) we define two functions \vCoq{push} and \vCoq{pop}, which act as the operational semantics of \lstiC{PUSH} and \lstiC{POP};
+(ii) we formally prove that \vCoq{push} and \vCoq{pop} are mutual inverses within a suitable three-dimensional domain of interpretation.
+The related code is at \cite{PlazzoRoversi24RevPushPopGit}.
+
+\begin{example}
+A \SCORE program is:
+\begin{align*}
+\lstiC{FOR x \{POP s\}; FOR x \{PUSH s\}}
+\enspace .
+\end{align*}
+\noindent
+Let $3$ be the initial value of \lstiC{x}, and assume that \lstiC{s} contains the stack \lstiC{[2,1]}. In \SCORE:
+\begin{itemize}
+\item
+interpreting ``\lstiC{FOR x \{POP s\}}'' empties \lstiC{s} beyond its bottom element because the iteration tries to remove more items than those initially present;
+\item
+interpreting ``\lstiC{FOR x \{PUSH s\}}'', i.e. the inverse ``\invSC{(FOR x \{POP s\})}'' of ``\lstiC{FOR x \{POP s\}}'', immediately after ``\lstiC{FOR x \{POP s\}}'', restores the original stack \lstiC{[2,1]} in \lstiC{s}.
+\end{itemize}
+\end{example}
+
+\vspace{\baselineskip}
+We conclude by noting that we use a step-by-step approach to build \vCoq{push} and \vCoq{pop}.
+The reason is partly pedagogical, given the potentially broad readership of this work.
+In particular, we introduce three different operational semantics of \SCORE, called \nsemantics, \asemantics, and \rsemantics.
+The aim is to gradually guide the reader to see the structure of the states where \vCoq{push} and \vCoq{pop} are interpreted, ultimately removing the need for \lstiC{assert}, in line with the \TIF perspective.

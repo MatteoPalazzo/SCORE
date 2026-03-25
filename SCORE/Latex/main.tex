@@ -1,0 +1,136 @@
+% !TeX spellcheck = en_US
+\documentclass[submission,copyright,creativecommons]{eptcs}
+\providecommand{\event}{LTT2026} % Name of the event you are submitting to
+
+\hyphenation{non-de-ter-mi-nis-tic}
+
+\usepackage[T1]{fontenc}        % Recommended with pdflatex
+\usepackage[utf8]{inputenc}
+\usepackage{bold-extra} % bold tt
+
+\usepackage{float}
+\floatstyle{boxed}
+\restylefloat{figure}
+
+\usepackage{xspace}
+\usepackage{graphicx}
+\usepackage[dvipsnames]{xcolor}
+%%%% For Coq listing
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{ltblue}{rgb}{0,0.4,0.4}
+\definecolor{dkviolet}{rgb}{0.3,0,0.5}
+\definecolor{dkblue}{rgb}{0.0,0.1,0.6}
+%%%%%%%%%%%
+\usepackage{soul}
+
+% \usepackage{lineno}
+% \linenumbers
+
+%MATH PACKAGES
+\usepackage{bussproofs}
+
+\usepackage{stmaryrd}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+\theoremstyle{plain}% default
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+%\newtheorem{theorem}{Theorem}[section]
+%\newtheorem{lemma}[theorem]{Lemma}
+%\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+%\newtheorem{definition}{Definition}[section]
+%\newtheorem{example}{Example}[section]
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\newtheorem{note}{Note}
+
+%LISTINGS
+\usepackage{listings}
+\newcommand{\listingsttfamily}{\fontfamily{SourceCodePro-TLF}\small}
+%\newcommand{\listingsttfamily}{\fontfamily{IBMPlexMono-TLF}\small}
+%\newcommand{\listingsttfamily}{\fontfamily{NotoSansMono-TLF}\small}
+\input{coqlst.tex}
+\input{clst.tex}
+
+
+% Define the dedication environment
+\newenvironment{dedication}
+{
+%    \clearpage           % Start a new page
+%    \thispagestyle{empty}% No header and footer
+%    \vspace*{\stretch{1}}% Space at the top
+    \itshape             % Italic text
+    \raggedleft          % Right-aligned text
+}
+{
+    \par % End the paragraph
+%    \vspace{\stretch{3}} % Space at the bottom
+%    \clearpage           % Finish the page
+}
+
+
+%MACROS
+\input{macros.tex}
+
+
+
+\title{Reversible Computation with\\ Stacks and ``Reversible Management of Failures''}
+\author{
+Matteo Palazzo \qquad\qquad Luca Roversi
+\institute{Dipartimento di Informatica\\ Università di Torino -- Italy}
+\email{\quad matteo.palazzo@unito.it \quad\qquad luca.roversi@unito.it}
+}
+\def\titlerunning{Reversible Computation, Stacks, Management of Failures}
+\def\authorrunning{M. Palazzo \& L. Roversi}
+
+
+
+\usepackage{hyperref}
+\hypersetup{
+  bookmarksnumbered,
+  pdftitle    = {\titlerunning},
+  pdfauthor   = {\authorrunning},
+  pdfsubject  = {EPTCS},               % Consider adding a more appropriate subject or description
+  % pdfkeywords = {keyword1, keyword2} % Uncomment and enter keywords specific to your paper
+}
+
+%\hypersetup{
+%    colorlinks=true,
+%    linkcolor=blue,
+%    filecolor=blue,
+%    urlcolor=blue,
+%    citecolor=blue,
+%}
+\begin{document}
+\maketitle
+%
+
+\input{abstract.tex}
+\begin{dedication}
+    Dedicated to Stefano Berardi\\
+    on the occasion of his 64th birthday.
+\end{dedication}
+\input{introduction.tex}
+\input{related-work.tex}
+\input{closing-dedication.tex}
+
+\input{structure-paper.tex}
+\input{score-syntax.tex}
+\input{score-naive-semantic.tex}
+\input{score-assert-semantic.tex}
+\input{score-semantic.tex}
+\input{conclusion.tex}
+
+\bibliographystyle{eptcs}
+\bibliography{bibliography.bib}
+
+%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

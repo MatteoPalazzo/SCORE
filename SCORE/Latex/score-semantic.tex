@@ -1,0 +1,256 @@
+% !TeX spellcheck = en_US
+
+%---------------
+\section{A final, \lstiC{assert}-free, hence total, semantics of \textsf{S-CORE}}
+\label{section:Assertion free S-CORE}
+
+Let us recall from the introduction that we identify \TIF as the set of all approaches which, starting from a non-reversible model, have as their goal the definition of reversible operational semantics that, by design, can never abort because of an inability to reconstruct the computational state preceding the current one.
+
+
+%%%%%%-------
+\subsection{\rsemantics}
+\rsemantics is an \lstiC{assert}-free instance of \TIF. 
+It's main aspect is to map every variable \lstiC{x} to a refinement of sates as triples $(v, s, c) \in \ZZ \times \StackZZ \times \NN$ whose last element $c$ acts as a counter. 
+States-as-triples eliminates the need to abort computations that involve \lstiC{PUSH} and \lstiC{POP}, ensuring reversibility.
+
+As we aim to formalize part of \rsemantics using the proof-assistant \Coq, we adopt \Coq notation ``\vCoq{ident -> Z*(list Z)*nat}'' to formalize the states-as-triples notation:
+\begin{enumerate}
+\item  
+``\vCoq{ident}'' stands for the set of variable names $V$ in Definition~\ref{definition:S-CORE syntax};  
+\item
+``\vCoq{Z}'' stands for $\ZZ$;  
+\item
+``\vCoq{list Z}'' corresponds to the set $\StackZZ$ of all and only the stacks containing values of $\ZZ$;  
+\item
+``\vCoq{nat}'' represents $\NN$, and ``\vCoq{*}'' denotes the Cartesian product between two types.  
+\end{enumerate}
+\noindent
+\begin{definition}[States as triples]
+\label{definition:States as triples}
+A state is a map $\sigma : \vCoq{ident -> Z*(list Z)*}$ \vCoq{nat}, where \vCoq{ident} is taken as an alias of the standard type \vCoq{string}.
+\end{definition}
+
+%%%%-----------
+\subsection{The never aborting bijections \vCoq{push} and \vCoq{pop}}
+\label{subsection:The main reason of nat occurring in Z*(list Z)*nat}
+
+The structure of states in Definition~\ref{definition:States as triples} allows us to define the functions \vCoq{push} and \vCoq{pop} in \Coq, verify their properties \cite{PlazzoRoversi24RevPushPopGit}, and use them for interpreting \lstiC{PUSH} and \lstiC{POP}.
+
+\begin{definition}[The bijections on stacks]
+\label{definition:Functions push and pop}
+Figure~\ref{fig:definitions of push and pop} defines \vCoq{push} and \vCoq{pop} as inductive functions of type \vCoq{Z*(list Z)*nat -> Z*(list Z)*nat} which proceed by pattern matching on their argument.
+\end{definition}
+\noindent
+If $\sigma$ is a state such that $\sigma(\lstiC{x})$ yields \vCoq{(v,s,c):Z*(list Z)*nat}, then both \vCoq{push} and \vCoq{pop} assure that \vCoq{c} satisfies the \emph{invariant}:
+\begin{quote}
+``\vCoq{c} is greater than \vCoq{0} if and only if some ``\lstiC{POP x}'', interpreted by \vCoq{pop}, has been applied to states associated to \lstiC{x} in which \vCoq{s} is the empty list \vCoq{[]}, or \vCoq{v} is not $0$.''
+\end{quote}
+\noindent
+The intuition is that the value of \vCoq{c} counts the number of \emph{illegal} \vCoq{pop} applications which generate a state in which we dub any variable \lstiC{x} as ``\emph{broken}'' as soon as its counter \vCoq{c} is greater than \vCoq{0}. 
+The effects of illegal \vCoq{pop} applications can be ``undone'' by applying a corresponding number of \vCoq{push}.
+
+
+\begin{figure}[t]
+\begin{lstlisting}[language=Coq]
+        Definition push (trpl: Z*(list Z)*nat) : Z*(list Z)*nat :=
+        match trpl with
+        | (v,    t,   O) => (0, v::t,   O)  (* 1st clause *)
+        | (0, v::t, S c) => (0, v::t, S c)  (* 2nd clause *)
+        | (u,    s, S c) => (u,    s,   c)  (* 3rd clause *)
+        end.
+
+        Definition pop (trpl: Z*(list Z)*nat) : Z*(list Z)*nat :=
+        match trpl with
+        | (0, v::t,   O) => (v,    t,   O)  (* 1st clause *)
+        | (0, v::t, S c) => (0, v::t, S c)  (* 2nd clause *)
+        | (u,    s,   c) => (u,    s, S c)  (* 3rd clause *)
+        end.
+\end{lstlisting}
+\noindent
+\begin{minipage}{.95\textwidth}
+in which:
+\begin{itemize}
+\item
+``\vCoq{match trpl with ...}'' matches the value of ``\vCoq{trpl: Z*(list Z)*nat}'' with the patterns specified to the left of the symbol ``\vCoq{=>}''. The pattern to the right of ``\vCoq{=>}'' is the corresponding result of \vCoq{push} or \vCoq{pop}.
+\item
+The symbol ``\vCoq{O}'', which is not ``\vCoq{0}'', represents the \emph{zero} of natural numbers in \vCoq{nat} in unary notation. The term ``\vCoq{S c}'' is the ``successor'' of the natural number in ``\vCoq{c: nat}''.
+\item
+``\vCoq{v::t}'' the list with head \vCoq{v} and tail \vCoq{t}.
+\end{itemize}
+\end{minipage}
+\caption{The bijections \vCoq{push} and \vCoq{pop}.}
+\label{fig:definitions of push and pop}
+\end{figure}
+
+%%%%---
+
+%%%---------------------
+\subsection{The bijections \vCoq{push} and \vCoq{pop}}
+\label{subsection:Detailing out the behavior of pop}
+
+Even though Fig.~\ref{fig:definitions of push and pop} first lists \vCoq{push} and then \vCoq{pop}, we started from designing \vCoq{pop} because the most problematic one, concerning \TIF.
+Then we defined \vCoq{push} to be the inverse of \vCoq{pop}. 
+
+\paragraph{The bijection \vCoq{pop}.}
+Let us assume that $\sigma(\lstiC{x})$ yields \vCoq{(v,s,c)}, for some fixed \lstiC{x} and let us assume we apply \vCoq{pop} to \vCoq{(v,s,c)}.
+
+\begin{enumerate}
+\item
+The \vCoq{(* 1st clause *)} applies when we can effectively pop a value out of the stack \vCoq{s}.
+This is possible because we do not incur in any information loss because, simultaneously we have that:
+\begin{itemize}
+\item
+the current value of \lstiC{x} is ``\vCoq{0:Z}'';
+\item
+\lstiC{x} is not \emph{broken} because \vCoq{c} holds ``\vCoq{O:nat}'';
+\item
+the stack \vCoq{s} contains at least one value.
+\end{itemize}
+The new triple associated to \lstiC{x} by \vCoq{pop} has the top of \vCoq{s} set to the new value of \lstiC{x}.
+
+\item
+The \vCoq{(* 2nd clause *)} applies when \lstiC{x} is broken  because \vCoq{c} \emph{is not} \vCoq{O:nat}, even though the stack \vCoq{s} is not empty, and we could pop its top to replace the current value \vCoq{0:Z} of \vCoq{v}, at least in principle.
+
+This is the point where it is worth underlining the role of the counter \vCoq{c}.
+
+Let us pretend to drop it, working with pairs \vCoq{(v,s)}, instead than triples, as we were using \nsemantics or \asemantics.
+
+Both \vCoq{(* 2nd clause *)} and \vCoq{(* 3rd clause *)} of \vCoq{pop} in Definition~\ref{definition:Functions push and pop} would become:
+\begin{lstlisting}[language=Coq]
+        ...
+        | (0, v::t) => (v, t)  (* new 2nd clause *)
+        | (u,    s) => (u, s)  (* new 3rd clause *)
+\end{lstlisting}
+\noindent
+They would prevent \vCoq{pop} to be injective, hence to be reversible, at least in the following case:
+\begin{align}
+\label{align: pop counterexample}
+& \vCoq{pop(0,1::2::[])}
+= \vCoq{(1,2::[])}
+= \vCoq{pop(1,2::[])}
+\enspace .
+\end{align}
+
+If we switch again to triples, then \eqref{align: pop counterexample} is no more a counterexample to the injectivity of \vCoq{pop} because:
+\begin{align*}
+%\label{align: pop injectivity example}
+& \vCoq{pop(0,1::2::[],0)}
+= \vCoq{(1,2::[],0)}
+% \\
+% & \qquad
+\neq \vCoq{(1,2::[],S c)}
+= \vCoq{pop(1,2::[],c)}
+\enspace ,
+\end{align*}
+where, clearly, ``$\vCoq{S c} \neq \vCoq{0}$''.
+
+In general, the counter \vCoq{c} serves as a \emph{flag}. When \vCoq{c} exceeds ``\vCoq{O:nat}'', it distinguishes states where applying \vCoq{pop} is meaningless from those where \vCoq{pop} behaves as expected, removing an element from the stack.
+
+\item
+The \vCoq{(* 3rd clause *)} applies:
+\begin{itemize}
+\item either when trying to pop an element from an empty stack,
+\item or when trying to pop an element from a stack when the value \vCoq{v} associated to \vCoq{x} is not \vCoq{0}.
+\end{itemize}
+In both cases the counter \vCoq{c} is increased, possibly \emph{breaking} (if not already) the invoveld variable.
+\end{enumerate}
+
+%%%---------------------
+\paragraph{The bijection \vCoq{push}.}
+% \label{subsection:Detailing out the behavior of push}
+It is defined by three clauses, each designed to be the inverse of the corresponding one in \vCoq{pop}.
+
+\begin{itemize}
+\item
+The \vCoq{(* 1st clause *)} applies to a non broken variable, i.e. when the counter \vCoq{c} holds \vCoq{O:nat}. It pushes \vCoq{v} on top of the stack, yielding \vCoq{v::t} and setting the value of \vCoq{v} to \vCoq{0}.
+
+\item
+The remaining clauses manage the \emph{broken} configurations, characterized by values of \vCoq{c} which counts former illegal applications of \vCoq{pop}. In those cases \vCoq{push} decreases the value in \vCoq{c}, eventually setting it to ``\vCoq{O:nat}'', i.e, possibly \emph{repairing} a broken variable.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+\input{S-core-definitive-sos.tex}
+%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%------
+\subsection{Properties of \vCoq{push} and \vCoq{pop}}
+\label{subsection:Properties of push and pop}
+
+We can finally prove that \vCoq{push} and \vCoq{pop} are each other inverse:
+{%
+\normalfont
+\begin{lstlisting}[language=Coq, label=lemma:popPushInverse]
+        Theorem pop_inv_push_inv_pop : forall p : Z*(list Z)*nat,
+            (pop (push p) = p) /\ (push (pop p) = p).
+\end{lstlisting}
+}% normalfont
+\noindent
+One can find the proof of the here above ``\vCoq{Theorem pop_inv_push_inv_pop}'' in \cite{PlazzoRoversi24RevPushPopGit}, based on the proof of its two components ``\vCoq{pop (push p) = p}'' and ``\vCoq{push (pop p) = p}'' which, in their turn, are proved as a case-by-case analysis of how \vCoq{pop} and \vCoq{push} behave when one is used just after the other.
+
+
+\vspace{\baselineskip}\noindent
+With \vCoq{pop} and \vCoq{push} available we can finally give:
+\begin{definition}[\rsemantics of \SCORE]
+\label{definition:rsemantics of SCORE}
+Fig.~\ref{fig:scoreSemanticDefinitive} collects all and only its rules.
+\end{definition}
+% \noindent
+% As expected, the rules \textsc{pop} and \textsc{push} rely on \vCoq{pop} and \vCoq{push}, respectively.
+
+\subsection{Strong reversibility of \SCORE}
+% \vspace{.5\baselineskip}\noindent
+Let us introduce the following concept:
+\begin{definition}[\StrRev semantics of \SCORE]
+\label{definition:StrRev semantics for SCORE}
+Let $\Sigma$ be the set of all states $\sigma$. A big-step semantics
+$\Downarrow \subseteq \SCORE \times \Sigma \times \Sigma$
+is \StrRev if and only if
+$\langle \lstiC{(P;}\invSC{P)}, \sigma \rangle \Downarrow \sigma$,
+for every $\lstiC{P} \in \SCORE$ and $\sigma \in \Sigma$. 
+\end{definition}
+\noindent
+The above ``\vCoq{Theorem pop_inv_push_inv_pop}'' implies:
+\begin{corollary}[\SCORE is \StrRev]
+\label{corollary:score_is_reversible}
+Let \lstiC{P} be a term of \SCORE, a and $\sigma \in \Sigma$.
+Then:
+\begin{align*}
+&
+\langle \lstiC{(P;}\invSC{P)}, \sigma \rangle \Downarrow \sigma\ \textrm{and}\ \langle \lstiC{(-P;P)}, \sigma \rangle \Downarrow \sigma
+\enspace .
+\end{align*}
+% \noindent
+% according to \StrRev ({\normalfont Definition~\ref{definition:StrRev semantics for SCORE}}).
+\end{corollary}
+\noindent
+Finally, 
+let $\llparenthesis \lstiC{P} \rrparenthesis$ be the function from $\Sigma$ to $\Sigma$ that \rsemantics associates with a term \lstiC{P}, that is $\llparenthesis \lstiC{P} \rrparenthesis(\sigma) = \tau$ if and only if $\langle \lstiC{P}, \sigma \rangle \Downarrow \tau $, according to \rsemantics as given in Definition~\ref{definition:rsemantics of SCORE}.
+Corollary~\ref{corollary:score_is_reversible} implies:
+\begin{corollary}
+\label{corollary:SCORE term are bijections}
+For every term \lstiC{P} of \SCORE, the function
+$\llparenthesis \lstiC{P} \rrparenthesis$ is a \emph{bijection}.
+\end{corollary}
+
+%%%-----------------
+\subsection{\rsemantics manages failures of \asemantics reversibly}
+\label{subsection:reversibleFailureManagement}
+
+
+
+
+Let us focus on the two following observations:
+\begin{enumerate} 
+\item 
+Interpreting a \SCORE term \lstiC{P} according to \rsemantics from state $\sigma$ cannot abort even \MH{when}
+%, for example, 
+a variable \lstiC{x} would be broken due to attempts to apply \vCoq{pop} in a non reversible context, e.g. when trying to \vCoq{pop} non-existing elements from its stack. Instead, the execution of the \rsemantics continues until it reaches a terminal state.
+
+\item 
+Conversely, interpreting \lstiC{P} according to \asemantics from a state $\sigma$ results in an immediate abort as soon as \lstiC{x} becomes broken in some state $\tau$, as the computation leading to $\tau$ cannot be ``undone'' uniquely, the term \lstiC{P} \emph{fails}.
+\end{enumerate} 
+\noindent 
+All this means that \asemantics \emph{fails} in interpreting \lstiC{P} if and only if \rsemantics halts on \lstiC{P} in a state where at least one variable remains \emph{broken}. This allows us to conclude that \rsemantics recovers all the situations in which \asemantics would fail.
+
+
