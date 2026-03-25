@@ -1,0 +1,12 @@
+coqc -topfile CommonDefinitions.v -Q . CDF CommonDefinitions.v
+coqc -topfile SCORE_language.v -Q . CDF SCORE_language.v
+coqc -topfile SCORE_interpreter_PUSH_POP_defs.v -Q . CDF SCORE_interpreter_PUSH_POP_defs.v
+coqc -topfile SCORE_interpreter.v -Q . CDF SCORE_interpreter.v
+coqc -topfile SCORE_wellformedness_properties.v -Q . CDF SCORE_wellformedness_properties.v
+coqc -topfile SCORE_interpreter_PUSH_POP_properties.v -Q . CDF SCORE_interpreter_PUSH_POP_properties.v
+coqc -topfile SCORE_wellformedness_properties.v -Q . CDF SCORE_wellformedness_properties.v
+coqc -topfile SCORE_reversibility_general_properties.v -Q . CDF SCORE_reversibility_general_properties.v
+coqc -topfile SCORE_interpreter_invertible_base_cases.v -Q . CDF SCORE_interpreter_invertible_base_cases.v
+coqc -topfile SCORE_interpreter_invertible_SEQ_case.v -Q . CDF SCORE_interpreter_invertible_SEQ_case.v
+coqc -topfile SCORE_interpreter_invertible_FOR_case.v -Q . CDF SCORE_interpreter_invertible_FOR_case.v
+coqc -topfile SCORE_invertible.v -Q . CDF SCORE_invertible.v
