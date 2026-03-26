@@ -27,8 +27,12 @@
 ###############################################################################
 # 5) In those trees, allow ONLY these extensions (any depth)
 ###############################################################################
-!SCORE/Latex/**/*.tex
-!SCORE/Latex/**/*.bib
+!SCORE/Latex/BerardiFestschrift/*.tex
+!SCORE/Latex/BerardiFestschrift/*.bib
+!SCORE/Latex/BerardiFestschrift/*.bst
+!SCORE/Latex/BerardiFestschrift/*.cls
+!SCORE/Latex/BiniRocq/*.tex
+!SCORE/Latex/BiniRocq/*.bib
 !SCORE/Rocq/**/*.v
 !SCORE/Rocq/**/_CoqProject
 !SCORE/Rocq/**/*.bat
