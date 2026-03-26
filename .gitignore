@@ -28,7 +28,10 @@
 # 5) In those trees, allow ONLY these extensions (any depth)
 ###############################################################################
 !SCORE/Latex/**/*.tex
+!SCORE/Latex/**/*.bib
 !SCORE/Rocq/**/*.v
+!SCORE/Rocq/**/_CoqProject
+!SCORE/Rocq/**/*.bat
 
 ###############################################################################
 # 6) EXCLUDED FOLDERS
