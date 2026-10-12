@@ -1,8 +1,11 @@
 Firstly, run once:
 
-coq_makefile -f _CoqProject -o Make
+coq_makefile -f _CoqProject -o Makefile
 
 Then, run:
 
-make -f Make
+make
+make clean
+
+or other admissible makes...
 

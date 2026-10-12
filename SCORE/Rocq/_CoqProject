@@ -1,6 +1,13 @@
 -Q . CDF
 
-common_parts.v
-push_pop_definitions.v
-push_pop_properties.v
-
+CommonDefinitions.v
+SCORE_language.v
+SCORE_interpreter_PUSH_POP_defs.v
+SCORE_interpreter.v
+SCORE_wellformedness_properties.v
+SCORE_interpreter_PUSH_POP_properties.v
+SCORE_reversibility_general_properties.v
+SCORE_interpreter_invertible_base_cases.v
+SCORE_interpreter_invertible_SEQ_case.v
+SCORE_interpreter_invertible_FOR_case.v
+SCORE_invertible.v

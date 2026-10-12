@@ -1,4 +1,5 @@
-\documentclass[aspectratio=169]{beamer}
+\documentclass{beamer}
+%\documentclass[aspectratio=169]{beamer}
 
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -16,6 +17,7 @@
 \begin{frame}[plain]
 \centering
 \begin{tikzpicture}[
+scale=.7,
     x=1cm,y=1cm,
     >=Latex,
     text=ink,
@@ -70,7 +72,7 @@
 \node[lbl, anchor=east] (vars) at (-4.2,-2.45) {Variables};
 \node[smalllbl, align=left, anchor=west] (tuple) at (-1.5,-2.45)
 {
-$\bigl($Current variable value, Stack of values, Error counter$\bigr)$
+$\bigl($Current value, Stack of values, Err. counter$\bigr)$
 };
 
 % Arrow from Variables to tuple (centered on target node)
@@ -80,14 +82,15 @@ $\bigl($Current variable value, Stack of values, Error counter$\bigr)$
 \draw[arr] (-5,-2.15) to[out=90,in=-90] (-4.5,-1.0);
 
 % Bottom note (named node)
-\node[smalllbl, anchor=west] (note) at (1.3,-3.25) {makes push/pop reversible};
+\node[smalllbl, anchor=west] (note) at (1.3,-3.75) {makes push/pop reversible};
+%\node[smalllbl, anchor=west] (note) at (1.3,-3.25) {makes push/pop reversible};
 
 % Coordinate near "Error counter" (right side of tuple)
 \coordinate (err) at ($(tuple.east)+(-0.3,0)$);
 
 % Arrow from note to "Error counter"
 %\draw[arr] (note.north west) to[out=0,in=-60] (err);
-\draw[arr] (5.75,-3.20) to[out=0,in=-90] (6.75,-2.65);
+\draw[arr] (5.75,-3.55) to[out=90,in=-90] (6.75,-2.65);
 
 \end{tikzpicture}
 \end{frame}
